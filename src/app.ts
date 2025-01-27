@@ -1,21 +1,20 @@
-import express, { Application, Request, Response } from 'express'
+import express, { Application } from 'express'
 import cors from 'cors';
 import { userRoutes } from './App/modules/user/user.routes';
 import { blogRoutes } from './App/modules/blog/blog.routes';
+import { authRoutes } from './App/modules/auth/auth.routes';
+import cookieParser from 'cookie-parser';
+import router from './App/routes';
+import globalErrorHandler from './App/middlewares/globalErrorhandler';
 
 const app: Application = express();
 
 app.use(express.json());
-app.use(cors());
+app.use(cookieParser());
+app.use(cors({ origin: ['http://localhost:5173'] }));
 
-app.use('/api/users', userRoutes);
-app.use('/api/blogs', blogRoutes);
+app.use('/api/', router);
 
-
-const getAController = (req: Request, res: Response) => {
-    res.send('Hello from A controller');
-}
-
-app.get('/', getAController);
+app.use(globalErrorHandler);
 
 export default app;

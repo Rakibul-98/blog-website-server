@@ -1,12 +1,15 @@
-export type TUserName = {
-    firstName: string,
-    lastName: string,
+import { Model } from "mongoose";
+
+export interface TUser {
+    name: string;
+    email: string;
+    password: string;
+    role: 'user' | 'admin';
+    isBlocked: boolean;
+    isDeleted: boolean;
 }
 
-export type TUser = {
-    name: TUserName,
-    email: string,
-    password: string,
-    role: string,
-    isBlocked: boolean
+export interface User extends Model<TUser> {
+    isUserExistsByEmail(email: string): Promise<TUser>;
+    isPasswordMatched(plainTextPassword: string, hashedPassword: string): Promise<boolean>;
 }

@@ -1,26 +1,15 @@
 import { model, Schema } from 'mongoose';
-import { TUserName, TUser } from './user.interface';
+import { TUser, User } from './user.interface';
+import bcrypt from 'bcrypt';
+import config from '../../config';
 
 
-const nameSchema = new Schema<TUserName>({
-    firstName: {
-        type: String,
-        required: [true, 'First name is required'],
-        trim: true,
-        maxlength: [20, 'Must less than 20 characters']
-    },
-    lastName: {
-        type: String,
-        required: [true, 'Last name is required'],
-        trim: true,
-        maxlength: [20, 'Must less than 20 characters']
-    }
-})
-
-const userSchema = new Schema<TUser>({
+const userSchema = new Schema<TUser, User>({
     name: {
-        type: nameSchema,
-        required: [true, 'Name is required']
+        type: String,
+        required: [true, 'Name is required'],
+        trim: true,
+        maxlength: [30, 'Must less than 30 characters']
     },
     email: {
         type: String,
@@ -46,4 +35,25 @@ const userSchema = new Schema<TUser>({
     },
 );
 
-export const UserModel = model<TUser>('User', userSchema);
+
+userSchema.pre('save', async function (next) {
+    this.password = await bcrypt.hash(this.password,
+        Number(config.bcrypt_salt_rounds),
+    );
+    next();
+});
+
+userSchema.post('save', function (doc, next) {
+    doc.password = '';
+    next();
+});
+
+userSchema.statics.isUserExistsByEmail = async function (email: string) {
+    return await this.findOne({ email });
+};
+
+userSchema.statics.isPasswordMatched = async function (plainTextPassword: string, hashedPassword: string) {
+    return await bcrypt.compare(plainTextPassword, hashedPassword);
+};
+
+export const UserModel = model<TUser, User>('User', userSchema);
