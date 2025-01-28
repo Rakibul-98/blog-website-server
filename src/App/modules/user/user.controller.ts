@@ -37,7 +37,41 @@ const blockUser = catchAsync(async (req, res) => {
     })
 })
 
+const getAllUsers = catchAsync(async (req, res) => {
+    const result = await userServices.getAllUsersFromDB();
+
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: 'Users fetched successfully',
+        data: result
+    })
+})
+
+const getSingleUser = catchAsync(async (req, res) => {
+    const { email } = req.params;
+    const result = await userServices.getSingleUserFromDB(email, req.user.email);
+
+    if (!result) {
+        return sendResponse(res, {
+            statusCode: httpStatus.NOT_FOUND,
+            success: false,
+            message: 'User not found!',
+            data: {}
+        });
+    }
+
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: 'User fetched successfully',
+        data: result,
+    })
+})
+
 export const userControllers = {
     createUser,
     blockUser,
+    getAllUsers,
+    getSingleUser,
 }

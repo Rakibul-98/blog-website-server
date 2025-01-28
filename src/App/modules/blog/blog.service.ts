@@ -2,6 +2,7 @@ import httpStatus from 'http-status';
 import { TBlog } from "./blog.interface";
 import { BlogModel } from "./blog.models";
 import AppError from '../../errors/AppError';
+import QueryBuilder from './blog.queryBuilder';
 
 const createBlogIntoDB = async (blog: TBlog) => {
     const newBlog = (await BlogModel.create(blog)).populate({
@@ -11,12 +12,28 @@ const createBlogIntoDB = async (blog: TBlog) => {
     return newBlog;
 };
 
-const getAllBlogsFromDB = async () => {
-    const blogs = await BlogModel.find().populate({
-        path: 'author',
-        select: '-password -__v',
-    });
-    return blogs;
+const getAllBlogsFromDB = async (query: Record<string, unknown>) => {
+    // const blogs = await BlogModel.find().populate({
+    //     path: 'author',
+    //     select: '-password -__v',
+    // });
+    // return blogs;
+
+    const blogQuery = new QueryBuilder(
+        BlogModel.find().populate({
+            path: 'author',
+            select: '-password -__v',
+        }),
+        query,
+    )
+        .search(['title',
+            'content'])
+        .sort()
+        .filter()
+
+    const result = await blogQuery.modelQuery;
+    return result;
+
 };
 
 const getSingleBlogFromDB = async (id: string) => {
@@ -32,12 +49,12 @@ const updateBlogIntoDB = async (_id: string, title: string, content: string, use
     const blog = await BlogModel.findOne({ _id, isDeleted: { $ne: true } });
 
     if (!blog) {
-        throw new AppError(httpStatus.NOT_FOUND,'Blog not found');
+        throw new AppError(httpStatus.NOT_FOUND, 'Blog not found');
     }
 
     // Check if the logged-in user is the author of the blog
     if (blog.author.toString() !== userId.toString()) {
-        throw new AppError(httpStatus.UNAUTHORIZED,'You are not authorized to update this blog');
+        throw new AppError(httpStatus.UNAUTHORIZED, 'You are not authorized to update this blog');
     }
 
     // Proceed with the update if the user is the author
@@ -62,14 +79,14 @@ const deleteBlogFromDB = async (_id: string, userId: string) => {
     const blog = await BlogModel.findOne({ _id, isDeleted: { $ne: true } });
 
     if (!blog) {
-        throw new AppError(httpStatus.NOT_FOUND,'Blog not found');
+        throw new AppError(httpStatus.NOT_FOUND, 'Blog not found');
     }
 
     // Check if the logged-in user is the author of the blog
     if (blog.author.toString() !== userId.toString()) {
-        throw new AppError(httpStatus.UNAUTHORIZED,'You are not authorized to update this blog');
+        throw new AppError(httpStatus.UNAUTHORIZED, 'You are not authorized to update this blog');
     }
-    
+
     const deletedBlog = await BlogModel.findByIdAndUpdate(
         { _id, isDeleted: { $ne: true } },
         { isDeleted: true },

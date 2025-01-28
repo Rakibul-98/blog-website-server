@@ -18,7 +18,9 @@ const userSchema = new Schema<TUser, User>({
     },
     password: {
         type: String,
-        required: true
+        required: true,
+        select: false,
+
     },
     role: {
         type: String,
@@ -43,13 +45,18 @@ userSchema.pre('save', async function (next) {
     next();
 });
 
+userSchema.pre('find', async function (next) {
+    this.select('-password');
+    next();
+});
+
 userSchema.post('save', function (doc, next) {
     doc.password = '';
     next();
 });
 
 userSchema.statics.isUserExistsByEmail = async function (email: string) {
-    return await this.findOne({ email });
+    return await this.findOne({ email }).select("+password");
 };
 
 userSchema.statics.isPasswordMatched = async function (plainTextPassword: string, hashedPassword: string) {
