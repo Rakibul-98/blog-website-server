@@ -8,7 +8,7 @@ const router = express.Router();
 
 router.post(
   '/create-blog',
-  auth(),
+  auth('user'),
   validateRequest(blogValidationSchema),
   blogControllers.createBlog,
 );
@@ -25,9 +25,15 @@ router.get(
 
 router.patch(
   '/:id',
-  auth(),
+  auth('user'),
   validateRequest(blogValidationSchema),
   blogControllers.updateBlog,
+);
+
+router.delete(
+  '/:id',
+  auth('user'),
+  blogControllers.deleteBlog,
 );
 
 export const blogRoutes = router;

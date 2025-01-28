@@ -57,7 +57,19 @@ const updateBlogIntoDB = async (_id: string, title: string, content: string, use
     return updatedBlog;
 };
 
-const deleteBlogFromDB = async (_id: string) => {
+const deleteBlogFromDB = async (_id: string, userId: string) => {
+
+    const blog = await BlogModel.findOne({ _id, isDeleted: { $ne: true } });
+
+    if (!blog) {
+        throw new AppError(httpStatus.NOT_FOUND,'Blog not found');
+    }
+
+    // Check if the logged-in user is the author of the blog
+    if (blog.author.toString() !== userId.toString()) {
+        throw new AppError(httpStatus.UNAUTHORIZED,'You are not authorized to update this blog');
+    }
+    
     const deletedBlog = await BlogModel.findByIdAndUpdate(
         { _id, isDeleted: { $ne: true } },
         { isDeleted: true },
