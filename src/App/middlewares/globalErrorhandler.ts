@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable no-unused-vars */
 import { ErrorRequestHandler } from 'express';
 import { ZodError } from 'zod';
 import AppError from '../errors/AppError';
@@ -24,22 +22,22 @@ const globalErrorHandler: ErrorRequestHandler = (err, req, res, next) => {
     const simplifiedError = handleZodValidationError(err);
     statusCode = simplifiedError?.statusCode;
     message = simplifiedError?.message;
-    errorSources = simplifiedError?.errorSources;
+    // errorSources = simplifiedError?.errorSources;
   } else if (err?.name === 'ValidationError') {
     const simplifiedError = handleValidationError(err);
     statusCode = simplifiedError?.statusCode;
     message = simplifiedError?.message;
-    errorSources = simplifiedError?.errorSources;
+    // errorSources = simplifiedError?.errorSources;
   } else if (err?.name === 'CastError') {
     const simplifiedError = mongooseCastError(err);
     statusCode = simplifiedError?.statusCode;
     message = simplifiedError?.message;
-    errorSources = simplifiedError?.errorSources;
+    // errorSources = simplifiedError?.errorSources;
   } else if (err?.code === 11000) {
     const simplifiedError = duplicateUserError(err);
     statusCode = simplifiedError?.statusCode;
     message = simplifiedError?.message;
-    errorSources = simplifiedError?.errorSources;
+    // errorSources = simplifiedError?.errorSources;
   } else if (err instanceof AppError) {
     statusCode = err?.statusCode;
     message = err.message;
@@ -62,8 +60,8 @@ const globalErrorHandler: ErrorRequestHandler = (err, req, res, next) => {
   res.status(statusCode).json({
     success: false,
     message,
-    errorSources,
-    err,
+    statusCode,
+    error: err?.issues,
     stack: config.node_env === 'development' ? err?.stack : null,
   });
 
