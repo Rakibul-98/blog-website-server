@@ -26,6 +26,7 @@ const auth = (...requiredRoles : string []) => {
             throw new AppError(httpStatus.UNAUTHORIZED, 'User not found!');
         }
 
+        // differentiated and secured roles
         if (requiredRoles && !requiredRoles.includes(decoded.role)) {
             throw new AppError(
               httpStatus.UNAUTHORIZED,

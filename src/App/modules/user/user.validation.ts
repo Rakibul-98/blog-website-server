@@ -1,5 +1,6 @@
 import { z } from "zod";
 
+// user data validation with zod validation
 const userValidationSchema = z.object({
     body: z.object({
         name: z

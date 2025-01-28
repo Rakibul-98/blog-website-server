@@ -1,10 +1,18 @@
+import { JwtPayload } from 'jsonwebtoken';
 import httpStatus from 'http-status';
 import { TBlog } from "./blog.interface";
 import { BlogModel } from "./blog.models";
 import AppError from '../../errors/AppError';
 import QueryBuilder from './blog.queryBuilder';
 
-const createBlogIntoDB = async (blog: TBlog) => {
+// create blog into db
+const createBlogIntoDB = async (blog: TBlog, loggedinUser: JwtPayload) => {
+
+    // checking if the user blocked or not
+    if(loggedinUser.isBlocked){
+        throw new AppError(httpStatus.FORBIDDEN,'User is blocked');
+    }
+    // create a blog and populate author data
     const newBlog = (await BlogModel.create(blog)).populate({
         path: 'author',
         select: '-password -__v',
@@ -12,13 +20,10 @@ const createBlogIntoDB = async (blog: TBlog) => {
     return newBlog;
 };
 
+// get all blogs
 const getAllBlogsFromDB = async (query: Record<string, unknown>) => {
-    // const blogs = await BlogModel.find().populate({
-    //     path: 'author',
-    //     select: '-password -__v',
-    // });
-    // return blogs;
 
+    // implementing the search query
     const blogQuery = new QueryBuilder(
         BlogModel.find().populate({
             path: 'author',
@@ -36,6 +41,7 @@ const getAllBlogsFromDB = async (query: Record<string, unknown>) => {
 
 };
 
+// get single blog
 const getSingleBlogFromDB = async (id: string) => {
     const blog = await BlogModel.findById(id).populate({
         path: 'author',
@@ -44,7 +50,14 @@ const getSingleBlogFromDB = async (id: string) => {
     return blog;
 };
 
-const updateBlogIntoDB = async (_id: string, title: string, content: string, userId: string) => {
+// update blog
+const updateBlogIntoDB = async (_id: string, title: string, content: string, loggedinUser: JwtPayload) => {
+
+    // checking if the user blocked or not
+    if(loggedinUser.isBlocked){
+        throw new AppError(httpStatus.FORBIDDEN,'User is blocked');
+    }
+
     // Find the blog to check if the user is the author
     const blog = await BlogModel.findOne({ _id, isDeleted: { $ne: true } });
 
@@ -53,7 +66,7 @@ const updateBlogIntoDB = async (_id: string, title: string, content: string, use
     }
 
     // Check if the logged-in user is the author of the blog
-    if (blog.author.toString() !== userId.toString()) {
+    if (blog.author.toString() !== loggedinUser._id.toString()) {
         throw new AppError(httpStatus.UNAUTHORIZED, 'You are not authorized to update this blog');
     }
 
@@ -74,7 +87,8 @@ const updateBlogIntoDB = async (_id: string, title: string, content: string, use
     return updatedBlog;
 };
 
-const deleteBlogFromDB = async (_id: string, userId: string) => {
+// delete blog
+const deleteBlogFromDB = async (_id: string, loggedinUser: JwtPayload) => {
 
     const blog = await BlogModel.findOne({ _id, isDeleted: { $ne: true } });
 
@@ -83,10 +97,11 @@ const deleteBlogFromDB = async (_id: string, userId: string) => {
     }
 
     // Check if the logged-in user is the author of the blog
-    if (blog.author.toString() !== userId.toString()) {
+    if (blog.author.toString() !== loggedinUser._id.toString() && loggedinUser.role !== "admin") {
         throw new AppError(httpStatus.UNAUTHORIZED, 'You are not authorized to update this blog');
     }
 
+    // Proceed with the deletion if the user is the author or admin
     const deletedBlog = await BlogModel.findByIdAndUpdate(
         { _id, isDeleted: { $ne: true } },
         { isDeleted: true },

@@ -3,18 +3,20 @@ import catchAsync from "../../utils/catchAsync";
 import sendResponse from '../../utils/sendResponse';
 import httpStatus from 'http-status';
 
+// user creation
 const createUser = catchAsync(async (req, res) => {
     const userData = req.body;
     const result = await userServices.createUserIntoDB(userData);
 
     sendResponse(res, {
-        statusCode: httpStatus.OK,
+        statusCode: httpStatus.CREATED,
         success: true,
         message: 'User registered successfully',
         data: result,
     });
 });
 
+// user blocking
 const blockUser = catchAsync(async (req, res) => {
     const { userId } = req.params;
 
@@ -37,6 +39,7 @@ const blockUser = catchAsync(async (req, res) => {
     })
 })
 
+// fetching all users
 const getAllUsers = catchAsync(async (req, res) => {
     const result = await userServices.getAllUsersFromDB();
 
@@ -48,6 +51,7 @@ const getAllUsers = catchAsync(async (req, res) => {
     })
 })
 
+// fetching single user by email
 const getSingleUser = catchAsync(async (req, res) => {
     const { email } = req.params;
     const result = await userServices.getSingleUserFromDB(email, req.user.email);

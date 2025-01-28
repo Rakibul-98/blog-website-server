@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-
+// validation schema for login request
 const loginValidationSchema = z.object({
     body: z.object({
         email: z.string(

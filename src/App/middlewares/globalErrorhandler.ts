@@ -18,27 +18,32 @@ const globalErrorHandler: ErrorRequestHandler = (err, req, res, next) => {
     },
   ];
 
+  // handling zor validation error
   if (err instanceof ZodError) {
     const simplifiedError = handleZodValidationError(err);
     statusCode = simplifiedError?.statusCode;
     message = simplifiedError?.message;
-    // errorSources = simplifiedError?.errorSources;
-  } else if (err?.name === 'ValidationError') {
+  } 
+  // handling generic error
+  else if (err?.name === 'ValidationError') {
     const simplifiedError = handleValidationError(err);
     statusCode = simplifiedError?.statusCode;
     message = simplifiedError?.message;
-    // errorSources = simplifiedError?.errorSources;
-  } else if (err?.name === 'CastError') {
+  } 
+  // handling mongoose casting error
+  else if (err?.name === 'CastError') {
     const simplifiedError = mongooseCastError(err);
     statusCode = simplifiedError?.statusCode;
     message = simplifiedError?.message;
-    // errorSources = simplifiedError?.errorSources;
-  } else if (err?.code === 11000) {
+  } 
+ // handling duplicate user error
+  else if (err?.code === 11000) {
     const simplifiedError = duplicateUserError(err);
     statusCode = simplifiedError?.statusCode;
     message = simplifiedError?.message;
-    // errorSources = simplifiedError?.errorSources;
-  } else if (err instanceof AppError) {
+  } 
+ // handling custom errors
+  else if (err instanceof AppError) {
     statusCode = err?.statusCode;
     message = err.message;
     errorSources = [
@@ -48,6 +53,7 @@ const globalErrorHandler: ErrorRequestHandler = (err, req, res, next) => {
       },
     ];
   }
+  // handling other errors
   else if (err instanceof Error) {
     message = err.message;
     errorSources = [
@@ -58,6 +64,7 @@ const globalErrorHandler: ErrorRequestHandler = (err, req, res, next) => {
     ];
   }
 
+  // send error response format to client side
   res.status(statusCode).json({
     success: false,
     message,

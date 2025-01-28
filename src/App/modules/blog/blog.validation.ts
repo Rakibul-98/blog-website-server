@@ -1,5 +1,6 @@
 import { z } from "zod";
 
+// Blog validation schema with zod
 const blogValidationSchema = z.object({
     body: z.object({
         title: z

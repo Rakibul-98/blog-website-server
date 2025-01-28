@@ -1,7 +1,7 @@
 import { model, Schema } from "mongoose";
 import { TBlog } from "./blog.interface";
 
-
+// create blog schema with blog type
 const blogSchema = new Schema<TBlog>({
     title: {
         type: String,

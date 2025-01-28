@@ -5,6 +5,7 @@ import { authControllers } from './auth.controller';
 
 const router = express.Router();
 
+// user login with proper validation
 router.post(
     '/login',
       validateRequest(authValidations.loginValidationSchema),

@@ -5,12 +5,14 @@ import { blogControllers } from '../blog/blog.controller';
 
 const router = express.Router();
 
+// route to block user by admin
 router.patch(
   '/users/:userId/block',
   auth('admin'),
   userControllers.blockUser,
 )
 
+// route to update user by admin
 router.delete(
     '/blogs/:id',
     auth('admin'),

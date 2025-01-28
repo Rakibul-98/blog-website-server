@@ -3,6 +3,7 @@ import { UserModel } from "./user.models";
 import AppError from '../../errors/AppError';
 import httpStatus from 'http-status';
 
+
 const createUserIntoDB = async ( user:TUser)=>{
     const newUser = await UserModel.create(user);
     return newUser;
@@ -30,6 +31,7 @@ const getSingleUserFromDB = async (email: string, userEmail: string)=>{
         throw new AppError(httpStatus.NOT_FOUND,'User not found');
     }
 
+    // checking if the actual user try to get the data
     if (email !== userEmail) {
         throw new AppError(httpStatus.FORBIDDEN, 'You are not authorized to view other user’s details');
       }
