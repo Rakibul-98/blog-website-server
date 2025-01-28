@@ -15,8 +15,7 @@ const blogSchema = new Schema<TBlog>({
     },
     author: {
         type: Schema.Types.ObjectId,
-        ref: 'User',
-        // required: true
+        ref: 'User'
     },
     isPublished: {
         type: Boolean,
@@ -29,5 +28,23 @@ const blogSchema = new Schema<TBlog>({
 },
     { timestamps: true }
 );
+
+// stop display deleted blogs
+blogSchema.pre('find',function(next){
+    this.find({isDeleted:{$ne:true}});
+    next();
+  })
+  
+  // stop finding deleted blogs by specific search
+  blogSchema.pre('findOne',function(next){
+    this.findOne({isDeleted:{$ne:true}});
+    next();
+  })
+  
+  // stop finding deleted blogs by aggregation
+  blogSchema.pre('aggregate',function(next){
+    this.pipeline().unshift({$match:{isDeleted :{$ne:true}}});
+    next();
+  })
 
 export const BlogModel = model<TBlog>('Blog', blogSchema);

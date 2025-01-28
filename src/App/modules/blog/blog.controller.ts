@@ -2,17 +2,19 @@ import httpStatus from 'http-status';
 import catchAsync from "../../utils/catchAsync";
 import sendResponse from "../../utils/sendResponse";
 import { blogServices } from './blog.service';
-import { RequestHandler } from 'express';
 
 
 const createBlog = catchAsync(async (req, res) => {
-    const { blog } = req.body;
-    const result = await blogServices.createBlogIntoDB(blog);
+    const  blogData = {
+        ...req.body,
+        author: req.user._id,
+    };
+    const result = await blogServices.createBlogIntoDB(blogData);
 
     sendResponse(res, {
-        statusCode: httpStatus.OK,
+        statusCode: httpStatus.CREATED,
         success: true,
-        message: 'Blog is created succesfully',
+        message: 'Blog created successfully',
         data: result,
     });
 });
@@ -23,7 +25,7 @@ const getAllBlogs = catchAsync(async (req, res) => {
     sendResponse(res, {
         statusCode: httpStatus.OK,
         success: true,
-        message: 'All blogs are retrieved successfully',
+        message: 'Blogs fetched successfully',
         data: result,
     });
 });
@@ -36,7 +38,7 @@ const getSingleBlog = catchAsync(async (req, res) => {
         return sendResponse(res, {
             statusCode: httpStatus.NOT_FOUND,
             success: false,
-            message: 'Blog not found',
+            message: 'Blog not found!',
             data: {}
         });
     }
@@ -52,13 +54,13 @@ const getSingleBlog = catchAsync(async (req, res) => {
 const updateBlog = catchAsync(async (req, res) => {
     const { id } = req.params;
     const { title, content } = req.body;
-    const result = await blogServices.updateBlogIntoDB(id, title, content);
+    const result = await blogServices.updateBlogIntoDB(id, title, content, req.user._id);
 
     if (!result) {
         return sendResponse(res, {
             statusCode: httpStatus.NOT_FOUND,
             success: false,
-            message: 'Blog not found',
+            message: 'Blog not found!',
             data: {}
         });
     }
@@ -88,7 +90,7 @@ const deleteBlog = catchAsync(async (req, res) => {
         statusCode: httpStatus.OK,
         success: true,
         message: 'Blog deleted successfully',
-        data: result,
+        data: {},
     })
 })
 

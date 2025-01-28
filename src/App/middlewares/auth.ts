@@ -1,7 +1,11 @@
+import httpStatus from 'http-status';
 import { NextFunction, Request, Response } from 'express';
 import catchAsync from '../utils/catchAsync';
 import jwt, { JwtPayload } from 'jsonwebtoken';
 import config from '../config';
+import AppError from '../errors/AppError';
+import { UserModel } from '../modules/user/user.models';
+
 
 
 const auth = () => {
@@ -10,17 +14,20 @@ const auth = () => {
 
         // check the token sent or not
         if (!accessToken) {
-            throw new Error('Unauthorized Access!');
+            throw new AppError(httpStatus.UNAUTHORIZED, 'You are not authorized!');
         }
 
         // validate the token
-        jwt.verify(accessToken, config.jwt_access_secret as string, function (err, decoded) {
-            if (err) {
-                throw new Error('Unauthorized Access!');
-            }
-            req.user = decoded as JwtPayload;
-            next();
-        });
+        const decoded: any = jwt.verify(accessToken, config.jwt_access_secret as string);
+
+        // get logged in user
+        const loggedinUser = await UserModel.findOne({ email: decoded.user });
+        if (!loggedinUser) {
+            throw new AppError(httpStatus.UNAUTHORIZED, 'User not found!');
+        }
+
+        req.user = loggedinUser;
+        next();
     });
 };
 

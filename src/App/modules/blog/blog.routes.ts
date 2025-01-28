@@ -1,18 +1,20 @@
 import express from 'express';
 import { blogControllers } from './blog.controller';
 import auth from '../../middlewares/auth';
+import validateRequest from '../../middlewares/validateRequest';
+import blogValidationSchema from './blog.validation';
 
 const router = express.Router();
 
 router.post(
   '/create-blog',
-//   validateRequest(createStudentValidationSchema),
+  auth(),
+  validateRequest(blogValidationSchema),
   blogControllers.createBlog,
 );
 
 router.get(
   '/',
-  auth(),
   blogControllers.getAllBlogs,
 );
 
@@ -23,11 +25,14 @@ router.get(
 
 router.patch(
   '/:id',
+  auth(),
+  validateRequest(blogValidationSchema),
   blogControllers.updateBlog,
 );
 
 router.delete(
   '/:id',
+  auth(),
   blogControllers.deleteBlog,
 );
 
