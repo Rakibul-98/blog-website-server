@@ -11,4 +11,9 @@ router.post(
   userControllers.createUser,
 );
 
+// router.patch(
+//   '/admin/users/:userId/block',
+//   userControllers.updateUser,
+// )
+
 export const userRoutes = router;

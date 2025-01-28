@@ -1,14 +1,14 @@
 import httpStatus from 'http-status';
 import { NextFunction, Request, Response } from 'express';
 import catchAsync from '../utils/catchAsync';
-import jwt, { JwtPayload } from 'jsonwebtoken';
+import jwt from 'jsonwebtoken';
 import config from '../config';
 import AppError from '../errors/AppError';
 import { UserModel } from '../modules/user/user.models';
 
 
 
-const auth = () => {
+const auth = (...requiredRoles : string []) => {
     return catchAsync(async (req: Request, res: Response, next: NextFunction) => {
         const accessToken = req.headers.authorization;
 
@@ -25,6 +25,13 @@ const auth = () => {
         if (!loggedinUser) {
             throw new AppError(httpStatus.UNAUTHORIZED, 'User not found!');
         }
+
+        if (requiredRoles && !requiredRoles.includes(decoded.role)) {
+            throw new AppError(
+              httpStatus.UNAUTHORIZED,
+              'Unauthorized access!',
+            );
+          }
 
         req.user = loggedinUser;
         next();

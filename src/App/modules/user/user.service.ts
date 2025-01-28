@@ -7,6 +7,16 @@ const createUserIntoDB = async ( user:TUser)=>{
     return newUser;
 }
 
+const blockUserIntoDB = async (_id: string) => {
+    const updatedUser = await UserModel.findByIdAndUpdate(
+        { _id, isDeleted: { $ne: true } },
+        { isBlocked: true },
+        { new: true }
+    );
+    return updatedUser;
+};
+
 export const userServices = {
-    createUserIntoDB
+    createUserIntoDB,
+    blockUserIntoDB
 }
